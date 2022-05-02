@@ -1,0 +1,42 @@
+[package]
+name = "yew-notepad"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+yew = { git = "https://github.com/yewstack/yew.git", features = ["tokio", "csr"] }
+yewdux = { git = "https://github.com/intendednull/yewdux.git" }
+yew-router = { git = "https://github.com/yewstack/yew.git" }
+wasm-bindgen = "0.2.51"
+js-sys = "0.3.28"
+lazy_static = "1.4.0"
+wasm-bindgen-futures = "0.4.30"
+futures-channel = "0.3.21"
+serde = "1.0.136"
+
+[dependencies.web-sys]
+version = "0.3.9"
+# We need to enable the `DomRect` feature in order to use the
+# `get_bounding_client_rect` method.
+features = [
+    "console",
+    "HtmlElement",
+    "MouseEvent",
+    "DomRect",
+    "IdbFactory",
+    "IdbOpenDbRequest",
+    "IdbRequest",
+    "IdbTransaction",
+    "IdbDatabase",
+    "IdbObjectStore",
+    "IdbIndex",
+    "IdbTransactionMode",
+    "IdbObjectStoreParameters",
+    "IdbCursorWithValue"
+]
+
+[dependencies.chrono]
+version = "0.4.19"
+features = ["wasmbind", "js-sys"]
