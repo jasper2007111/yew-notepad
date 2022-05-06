@@ -11,4 +11,6 @@ pub enum Route {
     NotFound,
     #[at("/add")]
     Add,
+    #[at("/edit/:id")]
+    Edit { id: u32 },
 }

@@ -1,20 +1,22 @@
 use super::note::Note;
+use super::note::WriteNote;
+
 use futures_channel::oneshot;
 use std::{cell::RefCell, rc::Rc};
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{
-    console, IdbCursorWithValue, IdbDatabase,
-    IdbObjectStoreParameters, IdbRequest, IdbTransactionMode,
+    console, IdbCursorWithValue, IdbDatabase, IdbObjectStoreParameters, IdbRequest,
+    IdbTransactionMode,
 };
 use yew::prelude::*;
 
 use chrono::prelude::*;
 
 const DATE_FORMAT_STR: &'static str = "%Y-%m-%d %H:%M:%S";
+const DB_NAME: &'static str = "notepad";
 
 pub struct Repository {
-    pub name: String,
     db: IdbDatabase,
 }
 
@@ -24,9 +26,7 @@ impl Repository {
         let window = web_sys::window().unwrap();
         let idb_factory = window.indexed_db().unwrap().unwrap();
 
-        let open_request = idb_factory
-            .open_with_u32(String::from("notepad").as_str(), 1)
-            .unwrap();
+        let open_request = idb_factory.open_with_u32(DB_NAME, 1).unwrap();
 
         let on_upgradeneeded = Closure::once(move |event: &Event| {
             let target = event.target().expect("Event should have a target; qed");
@@ -71,48 +71,85 @@ impl Repository {
         on_success.forget();
 
         let db = rx.await.unwrap();
-        Repository {
-            db,
-            name: String::from("jjjjj"),
-        }
+        Repository { db }
     }
 
-    // pub async fn getUser(&self) -> User {
-    //     let (tx, rx) = oneshot::channel::<User>();
+    pub async fn getNote(&self, id: u32) -> Note {
+        let (tx, rx) = oneshot::channel::<Note>();
 
-    //     let transaction = self
-    //         .db
-    //         .transaction_with_str_and_mode(&String::from("note"), IdbTransactionMode::Readwrite)
-    //         .expect("transaction_with_str error");
-    //     let store = transaction
-    //         .object_store(&String::from("user"))
-    //         .expect("store error");
+        let transaction = self
+            .db
+            .transaction_with_str_and_mode(&String::from("note"), IdbTransactionMode::Readwrite)
+            .expect("transaction_with_str error");
+        let store = transaction
+            .object_store(&String::from("note"))
+            .expect("store error");
 
-    //     let request = store.get(&JsValue::from(4)).expect("get all error");
-    //     let on_add_error = Closure::once(move |event: &Event| {
-    //         console::log_1(&String::from("写入数据失败").into());
-    //         console::log_1(&event.into());
-    //     });
-    //     request.set_onerror(Some(on_add_error.as_ref().unchecked_ref()));
-    //     on_add_error.forget();
+        console::log_1(&id.clone().to_string().into());
 
-    //     let on_success = Closure::once(move |event: &Event| {
-    //         let target = event.target().expect("msg");
-    //         let req = target
-    //             .dyn_ref::<IdbRequest>()
-    //             .expect("Event target is IdbRequest; qed");
-    //         let result = req.result().expect("read result error");
-    //         let user: User = result.into_serde().expect("msg");
-    //         // console::log_1(&user.name.into());
-    //         // console::log_1(&String::from("读取数据成功").into());
-    //         let _ = tx.send(user);
-    //     });
-    //     request.set_onsuccess(Some(on_success.as_ref().unchecked_ref()));
-    //     on_success.forget();
+        let request = store.get(&JsValue::from(id.clone())).expect("get all error");
+        let on_add_error = Closure::once(move |event: &Event| {
+            console::log_1(&String::from("读取数据失败").into());
+            console::log_1(&event.into());
+        });
+        request.set_onerror(Some(on_add_error.as_ref().unchecked_ref()));
+        on_add_error.forget();
 
-    //     let _user = rx.await.unwrap();
-    //     return _user;
-    // }
+        let on_success = Closure::once(move |event: &Event| {
+            let target = event.target().expect("msg");
+            let req = target
+                .dyn_ref::<IdbRequest>()
+                .expect("Event target is IdbRequest; qed");
+            let result = req.result().expect("read result error");
+            console::log_1(&result.clone().into());
+            let note: Note = result.into_serde().expect("msg");
+            console::log_1(&note.content.clone().into());
+            // console::log_1(&String::from("读取数据成功").into());
+            let _ = tx.send(note);
+        });
+        request.set_onsuccess(Some(on_success.as_ref().unchecked_ref()));
+        on_success.forget();
+
+        let note = rx.await.unwrap();
+        note
+    }
+
+    pub fn putNote(&self, note: &Note)  {
+        // let (tx, rx) = oneshot::channel::<Note>();
+        console::log_1(&String::from("dddddd").into());
+
+        let transaction = self
+            .db
+            .transaction_with_str_and_mode(&String::from("note"), IdbTransactionMode::Readwrite)
+            .expect("transaction_with_str error");
+        let store = transaction
+            .object_store(&String::from("note"))
+            .expect("store error");
+
+        let request = store.put(&JsValue::from_serde(&note).unwrap()).expect("get all error");
+        let on_add_error = Closure::once(move |event: &Event| {
+            console::log_1(&String::from("更新数据失败").into());
+            console::log_1(&event.into());
+        });
+        request.set_onerror(Some(on_add_error.as_ref().unchecked_ref()));
+        on_add_error.forget();
+
+        let on_success = Closure::once(move |event: &Event| {
+            let target = event.target().expect("msg");
+            let req = target
+                .dyn_ref::<IdbRequest>()
+                .expect("Event target is IdbRequest; qed");
+            let result = req.result().expect("read result error");
+            console::log_1(&result.clone().into());
+            console::log_1(&String::from("更新数据成功").into());
+            // let _ = tx.send(note);
+        });
+        request.set_onsuccess(Some(on_success.as_ref().unchecked_ref()));
+        on_success.forget();
+
+        // let note = rx.await.unwrap();
+        // note
+    }
 
     pub async fn list(&self) -> Vec<Note> {
         let (tx, rx) = oneshot::channel::<Vec<Note>>();
@@ -160,6 +197,7 @@ impl Repository {
                 let mut my_list = vec![];
                 for val in (*todo_list_ref).borrow_mut().iter() {
                     my_list.push(Note {
+                        id: val.id.clone(),
                         content: val.content.clone(),
                         create_time: val.create_time.clone(),
                     });
@@ -186,7 +224,7 @@ impl Repository {
         let now = js_sys::Date::new_0();
         let dt = DateTime::<Utc>::from(now.clone()); // 表示只在这个里面实现了
 
-        let note = Note {
+        let note = WriteNote {
             content: str.clone(),
             create_time: dt.format(DATE_FORMAT_STR).to_string(),
         };

@@ -5,6 +5,7 @@ mod jasper_ji;
 use jasper_ji::add::Add;
 use jasper_ji::home::Home;
 use jasper_ji::route::Route;
+use jasper_ji::edit::Edit;
 
 fn switch(routes: &Route) -> Html {
     match routes {
@@ -12,6 +13,9 @@ fn switch(routes: &Route) -> Html {
         Route::NotFound => html! { <h1>{ "404" }</h1> },
         Route::Add => html! {
             <Add/>
+        },
+        Route::Edit{id} => html! {
+            <Edit id={id}/>
         },
     }
 }

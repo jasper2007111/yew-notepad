@@ -1,31 +1,20 @@
-use std::error::Error;
-use std::fmt::{self, Debug, Display, Formatter};
 
+use web_sys::console;
 use yew::prelude::*;
 use yew::Callback;
 use yew::{html, Component, Context, Html};
 use yew_router::prelude::*;
 
+use yew::html::Scope;
+
+use std::{cell::RefCell, rc::Rc};
+
 use super::note::Note;
 use super::repository::Repository;
 use super::route::Route;
+use super::fetch_error::FetchError;
 
-#[derive(Debug, Clone, PartialEq)]
-pub struct FetchError {
-    err: String,
-}
-impl Display for FetchError {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        Debug::fmt(&self.err, f)
-    }
-}
-impl Error for FetchError {}
 
-impl From<String> for FetchError {
-    fn from(value: String) -> Self {
-        Self { err: value }
-    }
-}
 
 pub enum FetchState<T> {
     NotFetching,
@@ -42,6 +31,7 @@ async fn fetch_todo() -> Result<Vec<Note>, FetchError> {
 }
 
 pub enum Msg {
+    SetEdit(u32),
     SetTodoFetchState(FetchState<Vec<Note>>),
     GetTodo,
     GetError,
@@ -105,11 +95,18 @@ impl Component for Home {
                     .send_message(Msg::SetTodoFetchState(FetchState::Fetching));
                 false
             }
+            Msg::SetEdit(id) => {
+                console::log_1(&id.into());
+                let history1 = ctx.link().navigator().unwrap();
+                history1.push(Route::Edit{id:id.clone()});
+                false
+            }
         }
     }
     fn view(&self, ctx: &Context<Self>) -> Html {
         let history = ctx.link().navigator().unwrap();
         let onclick = Callback::from(move |_| history.push(Route::Add));
+
         match &self.todo {
             FetchState::NotFetching => html! {
                 <>
@@ -126,20 +123,23 @@ impl Component for Home {
                 html! {
                     <div>
                         <h1>{ "记事本" }</h1>
+                        <div style="margin: 10px 10px 0 0;"><button {onclick}>{ "添加" }</button></div>
                         <div>
                         {
                             data.into_iter().map(|note| {
+                                let id = note.id.clone();
                                 html!{
-                                    <div style="margin: 10px 10px 0 0;">
+                                    <div style="margin: 10px 10px 0 0; display: flex; flex-direction: column;">
                                     <div>{note.content.clone()}</div>
+                                    <div style="margin: 10px 0px 0px 0px; display: flex; flex-direction: row;">
                                     <div>{note.create_time.clone()}</div>
+                                    <button style="margin: 0px 0px 0px 10px; " onclick={ctx.link().callback(move|_|Msg::SetEdit(id))}>{"编辑"}</button>
+                                    </div>
                                     </div>
                                 }
                             }).collect::<Html>()
                         }
-
                         </div>
-                        <div style="margin: 10px 10px 0 0;"><button {onclick}>{ "添加" }</button></div>
                     </div>
                 }
             }(),
