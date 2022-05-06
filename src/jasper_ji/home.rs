@@ -31,6 +31,7 @@ async fn fetch_todo() -> Result<Vec<Note>, FetchError> {
 }
 
 pub enum Msg {
+    SetDelete(u32),
     SetEdit(u32),
     SetTodoFetchState(FetchState<Vec<Note>>),
     GetTodo,
@@ -101,6 +102,21 @@ impl Component for Home {
                 history1.push(Route::Edit{id:id.clone()});
                 false
             }
+            Msg::SetDelete(id) => {
+                console::log_1(&id.into());
+
+                ctx.link().send_future(async move {
+                    let repository = Repository::new().await;
+                    repository.delete_note(id.clone());
+                    match fetch_todo().await {
+                        Ok(md) => Msg::SetTodoFetchState(FetchState::Success(md)),
+                        Err(err) => Msg::SetTodoFetchState(FetchState::Failed(err)),
+                    }
+                });
+                ctx.link()
+                    .send_message(Msg::SetTodoFetchState(FetchState::Fetching));
+                false
+            }
         }
     }
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -134,6 +150,7 @@ impl Component for Home {
                                     <div style="margin: 10px 0px 0px 0px; display: flex; flex-direction: row;">
                                     <div>{note.create_time.clone()}</div>
                                     <button style="margin: 0px 0px 0px 10px; " onclick={ctx.link().callback(move|_|Msg::SetEdit(id))}>{"编辑"}</button>
+                                    <button style="margin: 0px 0px 0px 10px; " onclick={ctx.link().callback(move|_|Msg::SetDelete(id))}>{"删除"}</button>
                                     </div>
                                     </div>
                                 }

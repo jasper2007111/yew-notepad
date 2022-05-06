@@ -150,6 +150,43 @@ impl Repository {
         // note
     }
 
+    pub fn delete_note(&self, id: u32)  {
+        // let (tx, rx) = oneshot::channel::<Note>();
+        console::log_1(&String::from("dddddd").into());
+
+        let transaction = self
+            .db
+            .transaction_with_str_and_mode(&String::from("note"), IdbTransactionMode::Readwrite)
+            .expect("transaction_with_str error");
+        let store = transaction
+            .object_store(&String::from("note"))
+            .expect("store error");
+
+        let request = store.delete(&JsValue::from(id)).expect("get all error");
+        let on_add_error = Closure::once(move |event: &Event| {
+            console::log_1(&String::from("删除数据失败").into());
+            console::log_1(&event.into());
+        });
+        request.set_onerror(Some(on_add_error.as_ref().unchecked_ref()));
+        on_add_error.forget();
+
+        let on_success = Closure::once(move |event: &Event| {
+            let target = event.target().expect("msg");
+            let req = target
+                .dyn_ref::<IdbRequest>()
+                .expect("Event target is IdbRequest; qed");
+            let result = req.result().expect("read result error");
+            console::log_1(&result.clone().into());
+            console::log_1(&String::from("删除数据成功").into());
+            // let _ = tx.send(note);
+        });
+        request.set_onsuccess(Some(on_success.as_ref().unchecked_ref()));
+        on_success.forget();
+
+        // let note = rx.await.unwrap();
+        // note
+    }
+
     pub async fn list(&self) -> Vec<Note> {
         let (tx, rx) = oneshot::channel::<Vec<Note>>();
 
