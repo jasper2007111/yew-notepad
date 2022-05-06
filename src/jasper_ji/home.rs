@@ -127,7 +127,7 @@ impl Component for Home {
                         <div>
                         {
                             data.into_iter().map(|note| {
-                                let id = note.id.clone();
+                                let id = note.id.unwrap();
                                 html!{
                                     <div style="margin: 10px 10px 0 0; display: flex; flex-direction: column;">
                                     <div>{note.content.clone()}</div>

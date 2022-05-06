@@ -1,5 +1,4 @@
 use super::note::Note;
-use super::note::WriteNote;
 
 use futures_channel::oneshot;
 use std::{cell::RefCell, rc::Rc};
@@ -7,7 +6,7 @@ use wasm_bindgen::closure::Closure;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{
     console, IdbCursorWithValue, IdbDatabase, IdbObjectStoreParameters, IdbRequest,
-    IdbTransactionMode,
+    IdbTransactionMode,IdbKeyRange
 };
 use yew::prelude::*;
 
@@ -74,7 +73,7 @@ impl Repository {
         Repository { db }
     }
 
-    pub async fn getNote(&self, id: u32) -> Note {
+    pub async fn get_note(&self, id: u32) -> Note {
         let (tx, rx) = oneshot::channel::<Note>();
 
         let transaction = self
@@ -114,7 +113,7 @@ impl Repository {
         note
     }
 
-    pub fn putNote(&self, note: &Note)  {
+    pub fn put_note(&self, note: &Note)  {
         // let (tx, rx) = oneshot::channel::<Note>();
         console::log_1(&String::from("dddddd").into());
 
@@ -162,9 +161,10 @@ impl Repository {
             .object_store(&String::from("note"))
             .expect("store error");
 
-        let request = store.open_cursor().unwrap();
+        let rang = IdbKeyRange::bound(&JsValue::from(0), &JsValue::from(100));
+        let request = store.open_cursor_with_range_and_direction(&JsValue::from(&rang.unwrap()), web_sys::IdbCursorDirection::Prev).unwrap();
         let on_add_error = Closure::once(move |event: &Event| {
-            console::log_1(&String::from("写入数据失败").into());
+            console::log_1(&String::from("读取数据失败").into());
             console::log_1(&event.into());
         });
         request.set_onerror(Some(on_add_error.as_ref().unchecked_ref()));
@@ -224,7 +224,8 @@ impl Repository {
         let now = js_sys::Date::new_0();
         let dt = DateTime::<Utc>::from(now.clone()); // 表示只在这个里面实现了
 
-        let note = WriteNote {
+        let note = Note {
+            id: None,
             content: str.clone(),
             create_time: dt.format(DATE_FORMAT_STR).to_string(),
         };

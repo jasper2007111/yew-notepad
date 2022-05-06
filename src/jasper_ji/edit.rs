@@ -35,7 +35,7 @@ pub struct Edit {
 
 async fn fetch_todo(id: u32) -> Result<Note, FetchError> {
     let repository = Repository::new().await;
-    let note = repository.getNote(id).await;
+    let note = repository.get_note(id).await;
 
     Ok(note)
 }
@@ -113,11 +113,11 @@ impl Component for Edit {
             spawn_local(async move {
                 let repository = Repository::new().await;
                 let note = Note {
-                    id: id_value.parse::<u32>().unwrap(),
-                    content: content,
+                    id: Some(id_value.parse::<u32>().unwrap()),
+                    content,
                     create_time: create_time_value
                 };
-                repository.putNote(&note);
+                repository.put_note(&note);
             });
 
             history.back();
@@ -133,7 +133,7 @@ impl Component for Edit {
             FetchState::Success(note) => html! {
                 <div>
                 <h1>{ "Edit" }</h1>
-                <input value={note.id.clone().to_string()} type="hidden" id={"noteId"}/>
+                <input value={note.id.unwrap().to_string()} type="hidden" id={"noteId"}/>
                 <input value={note.create_time.clone()} type="hidden" id={"createTime"}/>
                 <textarea id={"content"} placeholder={"输入内容"} value={note.content.clone()}></textarea>
                 <div>
