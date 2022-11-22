@@ -207,7 +207,7 @@ impl Repository {
         request.set_onerror(Some(on_add_error.as_ref().unchecked_ref()));
         on_add_error.forget();
 
-        let todo_list = Rc::new(RefCell::new(Vec::new()));
+        let mut todo_list = Vec::new();
         let mut tx = Some(tx);
         let on_success = Closure::wrap(Box::new(move |event: &Event| {
             let target = event.target().expect("msg");
@@ -218,7 +218,7 @@ impl Repository {
                 Ok(data) => data,
                 Err(err) => JsValue::null(),
             };
-            let todo_list_ref = Rc::clone(&todo_list);
+            // let todo_list_ref = Rc::clone(&todo_list);
             if !result.is_null() {
                 // console::log_1(&result.clone().into());
                 let db_cursor_with_value = result
@@ -226,27 +226,19 @@ impl Repository {
                     .expect("db_cursor_with_value error");
                 let value = db_cursor_with_value.value().expect("value error");
                 let note: Note = value.into_serde().expect("msg");
-                (*todo_list_ref).borrow_mut().push(note);
+                todo_list.push(note);
                 let _ = db_cursor_with_value.continue_();
 
                 // console::log_1(&(*todo_list_ref).borrow_mut().len().into());
             } else {
-                let mut my_list = vec![];
-                for val in (*todo_list_ref).borrow_mut().iter() {
-                    my_list.push(Note {
-                        id: val.id.clone(),
-                        content: val.content.clone(),
-                        create_time: val.create_time.clone(),
-                    });
-                }
-                let _ = tx.take().unwrap().send(my_list);
+                let _ = tx.take().unwrap().send(todo_list.to_owned());
             }
         }) as Box<dyn FnMut(&Event)>);
         request.set_onsuccess(Some(on_success.as_ref().unchecked_ref()));
         on_success.forget();
 
-        let _list = rx.await.unwrap();
-        return _list;
+        let list = rx.await.unwrap();
+        list
     }
 
     pub fn save(&self, str: &String) {

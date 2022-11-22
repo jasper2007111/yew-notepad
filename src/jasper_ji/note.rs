@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize};
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Note {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
