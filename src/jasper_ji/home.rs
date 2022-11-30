@@ -15,7 +15,6 @@ use super::route::Route;
 use super::fetch_error::FetchError;
 
 
-
 pub enum FetchState<T> {
     NotFetching,
     Fetching,
@@ -99,7 +98,7 @@ impl Component for Home {
             Msg::SetEdit(id) => {
                 console::log_1(&id.into());
                 let history1 = ctx.link().navigator().unwrap();
-                history1.push(Route::Edit{id:id.clone()});
+                history1.push(&Route::Edit{id:id.clone()});
                 false
             }
             Msg::SetDelete(id) => {
@@ -121,7 +120,7 @@ impl Component for Home {
     }
     fn view(&self, ctx: &Context<Self>) -> Html {
         let history = ctx.link().navigator().unwrap();
-        let onclick = Callback::from(move |_| history.push(Route::Add));
+        let onclick = Callback::from(move |_| history.push(&Route::Add));
 
         match &self.todo {
             FetchState::NotFetching => html! {
