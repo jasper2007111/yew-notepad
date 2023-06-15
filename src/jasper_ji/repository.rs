@@ -1,7 +1,6 @@
 use super::note::Note;
 
 use futures_channel::oneshot;
-use std::{cell::RefCell, rc::Rc};
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{
@@ -115,7 +114,7 @@ impl Repository {
 
     pub fn put_note(&self, note: &Note)  {
         // let (tx, rx) = oneshot::channel::<Note>();
-        console::log_1(&String::from("dddddd").into());
+        console::log_1(&String::from("更新笔记").into());
 
         let transaction = self
             .db
@@ -152,7 +151,7 @@ impl Repository {
 
     pub fn delete_note(&self, id: u32)  {
         // let (tx, rx) = oneshot::channel::<Note>();
-        console::log_1(&String::from("dddddd").into());
+        console::log_1(&String::from("删除笔记").into());
 
         let transaction = self
             .db
