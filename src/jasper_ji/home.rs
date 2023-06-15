@@ -1,13 +1,8 @@
 
 use web_sys::console;
-use yew::prelude::*;
 use yew::Callback;
 use yew::{html, Component, Context, Html};
 use yew_router::prelude::*;
-
-use yew::html::Scope;
-
-use std::{cell::RefCell, rc::Rc};
 
 use super::note::Note;
 use super::repository::Repository;

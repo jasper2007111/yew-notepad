@@ -1,5 +1,3 @@
-use yew::prelude::*;
-use yew::{function_component, Callback};
 use yew_router::prelude::*;
 
 #[derive(Clone, Routable, PartialEq)]
