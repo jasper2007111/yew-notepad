@@ -100,7 +100,7 @@ impl Repository {
                 .expect("Event target is IdbRequest; qed");
             let result = req.result().expect("read result error");
             console::log_1(&result.clone().into());
-            let note: Note = result.into_serde().expect("msg");
+            let note: Note = serde_wasm_bindgen::from_value(result).expect("msg");
             console::log_1(&note.content.clone().into());
             // console::log_1(&String::from("读取数据成功").into());
             let _ = tx.send(note);
@@ -124,7 +124,8 @@ impl Repository {
             .object_store(&String::from("note"))
             .expect("store error");
 
-        let request = store.put(&JsValue::from_serde(&note).unwrap()).expect("get all error");
+            
+        let request = store.put(&serde_wasm_bindgen::to_value(&note).unwrap()).expect("get all error");
         let on_add_error = Closure::once(move |event: &Event| {
             console::log_1(&String::from("更新数据失败").into());
             console::log_1(&event.into());
@@ -215,7 +216,7 @@ impl Repository {
                 .expect("Event target is IdbRequest; qed");
             let result = match req.result() {
                 Ok(data) => data,
-                Err(err) => JsValue::null(),
+                Err(_err) => JsValue::null(),
             };
             // let todo_list_ref = Rc::clone(&todo_list);
             if !result.is_null() {
@@ -224,7 +225,7 @@ impl Repository {
                     .dyn_ref::<IdbCursorWithValue>()
                     .expect("db_cursor_with_value error");
                 let value = db_cursor_with_value.value().expect("value error");
-                let note: Note = value.into_serde().expect("msg");
+                let note: Note = serde_wasm_bindgen::from_value(value).expect("msg");
                 todo_list.push(note);
                 let _ = db_cursor_with_value.continue_();
 
@@ -257,7 +258,7 @@ impl Repository {
             content: str.clone(),
             create_time: dt.format(DATE_FORMAT_STR).to_string(),
         };
-        let add_request = store.add(&JsValue::from_serde(&note).unwrap()).expect(&str);
+        let add_request = store.add(&serde_wasm_bindgen::to_value(&note).unwrap()).expect(&str);
 
         let on_add_error = Closure::once(move |event: &Event| {
             console::log_1(&String::from("写入数据失败").into());
@@ -266,7 +267,7 @@ impl Repository {
         add_request.set_onerror(Some(on_add_error.as_ref().unchecked_ref()));
         on_add_error.forget();
 
-        let on_add_success = Closure::once(move |event: &Event| {
+        let on_add_success = Closure::once(move |_event: &Event| {
             console::log_1(&String::from("写入数据成功").into());
         });
         add_request.set_onsuccess(Some(on_add_success.as_ref().unchecked_ref()));
