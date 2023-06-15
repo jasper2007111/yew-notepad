@@ -3,9 +3,7 @@ use yew::{Callback};
 
 use wasm_bindgen::{JsCast};
 use wasm_bindgen_futures::spawn_local;
-use web_sys::{
-     HtmlTextAreaElement,console
-};
+use web_sys::{HtmlTextAreaElement};
 
 use yew_router::prelude::*;
 
@@ -23,11 +21,11 @@ impl Component for Add {
     type Message = Msg;
     type Properties = ();
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_ctx: &Context<Self>) -> Self {
         Self{}
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
         }
     }
