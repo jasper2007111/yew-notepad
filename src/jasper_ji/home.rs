@@ -1,14 +1,12 @@
-
 use web_sys::console;
 use yew::Callback;
 use yew::{html, Component, Context, Html};
 use yew_router::prelude::*;
 
+use super::fetch_error::FetchError;
 use super::note::Note;
 use super::repository::Repository;
 use super::route::Route;
-use super::fetch_error::FetchError;
-
 
 pub enum FetchState<T> {
     NotFetching,
@@ -93,7 +91,7 @@ impl Component for Home {
             Msg::SetEdit(id) => {
                 console::log_1(&id.into());
                 let history1 = ctx.link().navigator().unwrap();
-                history1.push(&Route::Edit{id:id.clone()});
+                history1.push(&Route::Edit { id: id.clone() });
                 false
             }
             Msg::SetDelete(id) => {
@@ -139,12 +137,12 @@ impl Component for Home {
                             data.into_iter().map(|note| {
                                 let id = note.id.unwrap();
                                 html!{
-                                    <div style="margin: 10px 10px 0 0; display: flex; flex-direction: column;">
+                                    <div class="note-container">
                                     <div>{note.content.clone()}</div>
-                                    <div style="margin: 10px 0px 0px 0px; display: flex; flex-direction: row;">
+                                    <div class="bottom-bar">
                                     <div>{note.create_time.clone()}</div>
-                                    <button style="margin: 0px 0px 0px 10px; " onclick={ctx.link().callback(move|_|Msg::SetEdit(id))}>{"编辑"}</button>
-                                    <button style="margin: 0px 0px 0px 10px; " onclick={ctx.link().callback(move|_|Msg::SetDelete(id))}>{"删除"}</button>
+                                    <button class="my-button" onclick={ctx.link().callback(move|_|Msg::SetEdit(id))}>{"编辑"}</button>
+                                    <button class="my-button" onclick={ctx.link().callback(move|_|Msg::SetDelete(id))}>{"删除"}</button>
                                     </div>
                                     </div>
                                 }
