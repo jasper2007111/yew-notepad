@@ -18,4 +18,4 @@ trunk serve --address=0.0.0.0
 ![Notepad](./screenshots.png)
 
 ### 部署
-运行`trunk server`后，会在当前目录下生dist的目录，部署的时候不能使用这个，因为这个里面加了调适的东西。部署的话应该使用`trunk build`命令产生的dist目录内容。
+运行`trunk server`后，会在当前目录下生dist的目录，部署的时候不能使用这个，因为这个里面加了调试的东西。部署的话应该使用`trunk build`命令产生的dist目录内容。
