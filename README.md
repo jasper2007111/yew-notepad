@@ -9,4 +9,10 @@ Yew的中文文档跟英文有出入，建议以英文的为主。
 trunk serve
 ```
 
+默认是127.0.0.1:8080，这个是无法在局域网内使用本机IP访问的，可以加参数修改，如下
+
+```sh
+trunk serve --address=0.0.0.0
+```
+
 ![Notepad](./screenshots.png)
